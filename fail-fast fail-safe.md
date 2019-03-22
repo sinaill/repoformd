@@ -54,7 +54,7 @@ add方法：
 
 ```
 
-move方法：
+remove方法：
 
 ```
     public E remove(int index) {
@@ -88,9 +88,7 @@ move方法：
 
 可以看到我们在获取下个元素时，Iterator会先比较modCount和expectedModCount，如果我们在迭代器遍历时调用了add或者remove等改变集合结构的方法时，modCount自增了，而expectedModCount不变，所以在此处会抛出ConcurrentModificationException
 
-但是如果是在我们自己遍历集合时想修改集合结构，而不是多线程环境中的话，我们可以使用Iterator中的方法
-
-以remove为例：
+但是如果是在我们自己遍历集合时想修改集合结构，而且不是多线程环境中的话，我们可以看Iterator中给我们提供的方法，在ArrayList中的内部类Iterator中给我们提供了一个remove方法
 
 ```
         public void remove() {
@@ -111,11 +109,46 @@ move方法：
 
 我们可以看到在移除元素后，重新对expectedModCount赋值，所以checkForComodification()不会抛出异常
 
+ArrayList还提供了一个更丰富的ListIterator内部类，是一个双向迭代器，可以双向遍历，在这里比Iterator多了add方法
+
+```
+    public void add(E e) {
+        checkForComodification();
+
+        try {
+            int i = cursor;
+            ArrayList.this.add(i, e);
+            cursor = i + 1;
+            lastRet = -1;
+            expectedModCount = modCount;
+        } catch (IndexOutOfBoundsException ex) {
+            throw new ConcurrentModificationException();
+        }
+    }
+}
+```
+
+依旧是处理了expectedModCount = modCount。
+
 ### fail-safe
 
-所以在多线程环境时，可以使用ConcurrentHashMap或者CopyOnWriterArrayList来替代，它们的原理为先复制原有集合，然后在复制集合上作修改，然后将原引用指向复制修改后的集合
+以ArrayList的替代类CopyOnWriteArrayList为例分析，CopyOnWriteArrayList为何物？ArrayList 的一个线程安全的变体，其中所有可变操作（add、set 等等）都是通过对底层数组进行一次新的复制来实现的。 该类产生的开销比较大，但是在两种情况下，它非常适合使用。
+1. 在不能或不想进行同步遍历，但又需要从并发线程中排除冲突时。
+2. 当遍历操作的数量大大超过可变操作的数量时。
 
-以add方法为例
+查看迭代器
+
+```
+public E next() {
+    if (! hasNext())
+        throw new NoSuchElementException();
+    return (E) snapshot[cursor++];
+}
+```
+
+没有像ArrayList的迭代器一样，它不需要检查expectedModCount = modCount
+
+再看add方法
 
 ```
 public boolean add(E paramE) {    
@@ -146,4 +179,5 @@ public boolean add(E paramE) {
             setArray(arrayOfObject2)
 ```
 
+所以在多线程环境时，可以使用CopyOnWriterArrayList来替代，它们的原理为先复制原有集合，然后在复制集合上作修改，然后将原引用指向复制修改后的集合，而迭代器遍历集合是先接收CopyOnWriterArrayList中存储元素的数组，然后对其遍历。这样就达到了遍历和修改集合结构分别在不同的存储数组中。
 

@@ -1,7 +1,7 @@
-title: 装饰者模式
+title: io基础
 categories: java基础
 tags: 
-	- 设计模式
+	- io
 ---
 
 ### 流的概念
