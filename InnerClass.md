@@ -80,3 +80,9 @@ Thread thread = new Thread(()->{});//Runnable为函数式接口
 ### 理解
 
 关于匿名内部类和局部内部类访问局部变量或者形参时，这是因为局部变量或形参与内部类的生存周期不同，当局部变量或形参被回收后，内部类的实例仍在，若此时访问它们，将会出错，所以局部变量和形参都是以构造函数的参数形式传入到匿名内部类中，相当于是复制了一份放到匿名内部类中，为了保持原始数据和复制后的数据相同，所以要使用final。[查看原理](http://blog.csdn.net/u014805893/article/details/53310521?locationNum=5&fps=1)
+
+### java8新修改
+
+**java8开始匿名内部类使用的外部变量不再被强制用final修饰。外部变量要么是final的，要么自初始化后值不会被改变，这两种都是可以在匿名内部类中使用且编译通过。**
+
+**Local variable br defined in an enclosing scope must be final or effectively final**

@@ -29,4 +29,5 @@ mysql的事务默认级别是可重复读
 |串行化（serializable）|否|否|否
 
 ### 锁
-待写
+
+[共享锁，排他锁与事务](https://www.letiantian.me/mysql-innodb-rr-x-lock-example/)

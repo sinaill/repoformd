@@ -103,7 +103,7 @@ public class Singleton {
 
 为什么要对`instance`使用`volatile`，`instance = new Singleton()`这句，这并非是一个原子操作，事实上在 JVM 中这句话大概做了下面 3 件事情，给`instance`分配内存，调用 Singleton 的构造函数来初始化成员变量，将instance对象指向分配的内存空间（执行完这步`instance`就为非 null 了）。但是在 JVM 的即时编译器中存在指令重排序的优化。也就是说上面的第二步和第三步的顺序是不能保证的，最终的执行顺序可能是 1-2-3 也可能是 1-3-2。如果是后者，则在 3 执行完毕、2 未执行之前，线程2进入第一个`instance==null`，这时`instance`已经是非null了（但却没有初始化），所以线程二会直接返回`instance`，然后使用，然后顺理成章地报错。
 
-总结
+### 总结
 修改`volatile`变量时会强制将修改后的值刷新的主内存中
 
 修改`volatile`变量后会导致其他线程工作内存中对应的变量值失效。因此，再读取该变量值的时候就需要重新从读取主内存中的值
@@ -111,6 +111,8 @@ public class Singleton {
 在访问`volatile`变量时不会执行加锁操作，因此也就不会使执行线程阻塞，因此`volatile`变量是一种比`sychronized`关键字更轻量级的同步机制。
 
 性能方面，`volatile`的读性能消耗与普通变量几乎相同，但是写操作稍慢，因为它需要在本地代码中插入许多内存屏障指令来保证处理器不发生乱序执行。
+
+不要将`volatile`用在`getAndOperate`场合，仅仅`set`或者`get`的场景是适合`volatile`的
 
 [对volatile更详细的参考](http://www.importnew.com/24082.html)
 [彻底理解volatile](https://juejin.im/post/5ae9b41b518825670b33e6c4)

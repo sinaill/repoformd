@@ -3,6 +3,7 @@ categories: java基础
 ---
 
 ### 查阅
+
 翻阅String和StringBuffer和源码可知
 String中用来存储字符串的char[]为
 
@@ -13,6 +14,8 @@ StringBuffer中用来存储字符串的char[]为
 `char[] value;`
 
 ### 构造方法的差别
+
+#### String
 
 String的构造方法较为简单
 
@@ -28,6 +31,7 @@ String的构造方法较为简单
 ```
 		String a = new String("abc");
 		String b = new String("abc");
+		//"abc"返回同一个String对象(常量池)，调用参数为String的构造方法
 		Field af = a.getClass().getDeclaredField("value");
 		Field bf = b.getClass().getDeclaredField("value");
 		af.setAccessible(true);
@@ -37,9 +41,16 @@ String的构造方法较为简单
 
 **由此我们可以看出，由于String常量池的存在，当我们用同一字符串来构造String对象时，他们中的value[]都指向了常量池中的该字符串对象的value[]**
 
+#### StringBuffer
+
 StringBuffer中参数为StringBuffer和String的构造函数，跟源码得
 
 ```
+    public StringBuffer(String str) {
+        super(str.length() + 16);
+        append(str);
+    }
+	
     public AbstractStringBuilder append(String str) {
         if (str == null)
             return appendNull();
