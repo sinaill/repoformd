@@ -23,11 +23,14 @@ mysql的事务默认级别是可重复读
 
 |事务隔离级别	|脏读|不可重复读|幻读|
 |-------|------|------|------|
-|读未提交|（read-uncommitted）|是	|是|是
-|不可重复读|（read-committed）|否	|是|是
-|可重复读（|repeatable-read）|否|否|是
-|串行化（serializable）|否|否|否
+|读未提交(read-uncommitted)|是	|是|是
+|不可重复读(read-committed)|否	|是|是
+|可重复读(repeatable-read)|否|否|是
+|串行化(serializable)|否|否|否
+
+[四种隔离级别测试](https://www.liaoxuefeng.com/wiki/1177760294764384/1219071817284064)
 
 ### 锁
 
 [共享锁，排他锁与事务](https://www.letiantian.me/mysql-innodb-rr-x-lock-example/)
+
