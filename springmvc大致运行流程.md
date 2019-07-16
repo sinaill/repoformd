@@ -9,11 +9,11 @@ tags:
 
 url和controller的映射方式
 
-**HandlerExecutionChain由对应的HandlerMappint获得**
 
 ![HandlerMapping](http://wx3.sinaimg.cn/large/96b7c0f4ly1g2blsrig3yj20bv04174a.jpg)
 
-默认加载的三种HandlerMapping:
+
+默认加载的三种HandlerMapping():
 
 - RequestMappingHandlerMapping:针对注解配置@RequestMapping
 - BeanNameUrlHandlerMapping：通过对比url和bean的name找到对应的对象，[使用例子](https://www.tutorialspoint.com/springmvc/springmvc_beannameurlhandlermapping.htm)
@@ -68,6 +68,10 @@ HandlerAdapter由HandlerMapping中获取到的HandlerExecutionChain中的`privat
 	}
 ```
 
+### HandlerExecutionChain
+
+
+
 ### 流程
 
 ![springmvc流程](http://wx4.sinaimg.cn/large/96b7c0f4ly1g2cfxsdnhfj20w20q878x.jpg)
@@ -81,7 +85,9 @@ HandlerAdapter由HandlerMapping中获取到的HandlerExecutionChain中的`privat
 				logger.trace(
 						"Testing handler map [" + hm + "] in DispatcherServlet with name '" + getServletName() + "'");
 			}
+			//handler
 			HandlerExecutionChain handler = hm.getHandler(request);
+			
 			if (handler != null) {
 				return handler;
 			}
