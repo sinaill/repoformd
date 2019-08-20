@@ -1,4 +1,4 @@
-title: SpringMvc中Handler方法的执行
+ title: SpringMvc中Handler方法的执行
 categories: 框架
 tags: 
 	- SpringMvc
@@ -64,6 +64,50 @@ protected ModelAndView handleInternal(HttpServletRequest request,
 	return invokeHandleMethod(request, response, handlerMethod);
 }
 ```
+
+`getSessionAttributesHandler`方法
+
+```
+private SessionAttributesHandler getSessionAttributesHandler(HandlerMethod handlerMethod) {
+	Class<?> handlerType = handlerMethod.getBeanType();
+	SessionAttributesHandler sessionAttrHandler = this.sessionAttributesHandlerCache.get(handlerType);
+	if (sessionAttrHandler == null) {
+		synchronized (this.sessionAttributesHandlerCache) {
+			sessionAttrHandler = this.sessionAttributesHandlerCache.get(handlerType);
+			if (sessionAttrHandler == null) {
+				sessionAttrHandler = new SessionAttributesHandler(handlerType, sessionAttributeStore);
+				this.sessionAttributesHandlerCache.put(handlerType, sessionAttrHandler);
+			}
+		}
+	}
+	return sessionAttrHandler;
+}
+```
+
+单例模式创建`SessionAttributesHandler`，看构造方法
+
+```
+public SessionAttributesHandler(Class<?> handlerType, SessionAttributeStore sessionAttributeStore) {
+	Assert.notNull(sessionAttributeStore, "SessionAttributeStore may not be null.");
+	this.sessionAttributeStore = sessionAttributeStore;
+
+	SessionAttributes annotation = AnnotationUtils.findAnnotation(handlerType, SessionAttributes.class);
+	if (annotation != null) {
+		this.attributeNames.addAll(Arrays.asList(annotation.value()));
+		this.attributeTypes.addAll(Arrays.<Class<?>>asList(annotation.types()));
+	}
+
+	for (String attributeName : this.attributeNames) {
+		this.knownAttributeNames.add(attributeName);
+	}
+}
+```
+
+查看`Controller`有没有`@SessionAttributes`注解
+
+把注解中的`value`值放入成员变量`knownAttributeNames`集合中
+
+这里的
 
 跟入`invokeHandleMethod`
 
@@ -342,26 +386,7 @@ private ModelFactory getModelFactory(HandlerMethod handlerMethod, WebDataBinderF
 
 主要是处理`@modelAttribute`注解方法
 
-先看`getSessionAttributesHandler`方法
-
-```
-private SessionAttributesHandler getSessionAttributesHandler(HandlerMethod handlerMethod) {
-	Class<?> handlerType = handlerMethod.getBeanType();
-	SessionAttributesHandler sessionAttrHandler = this.sessionAttributesHandlerCache.get(handlerType);
-	if (sessionAttrHandler == null) {
-		synchronized (this.sessionAttributesHandlerCache) {
-			sessionAttrHandler = this.sessionAttributesHandlerCache.get(handlerType);
-			if (sessionAttrHandler == null) {
-				sessionAttrHandler = new SessionAttributesHandler(handlerType, sessionAttributeStore);
-				this.sessionAttributesHandlerCache.put(handlerType, sessionAttrHandler);
-			}
-		}
-	}
-	return sessionAttrHandler;
-}
-```
-
-用了单例模式创建`SessionAttrHandler`，`sessionAttrHandler`是`DefaultSessionAttributeStore`类的实例，由于在`handleInternal`调用过这个方法，所以这里有了缓存
+`getSessionAttributesHandler`方法获取创建好的`SessionAttributesHandler`
 
 接着从当前`modelAttributeCache`根据当前`handlerType`查找集合`methods`
 
@@ -530,7 +555,7 @@ public boolean checkDependencies(ModelAndViewContainer mavContainer) {
 attrMethods.add(createModelAttributeMethod(binderFactory, bean, method));
 ```
 
-这一步是将获取到的带`@ModelAttribute`注解的方法放入到类型为`List<InvocableHandlerMethod>`的集合中`attrMethods`中，在创建`ModelFactory`类的实例的时候利用构造函数将其类型转化为`List<ModelMethod>`的集合`modelMethods`
+将获取到的带`@ModelAttribute`注解的方法`method`包装为`InvocableHandlerMethod`类型然后添加到`List<InvocableHandlerMethod>`的集合中`attrMethods`中，在创建`ModelFactory`类的实例的时候利用构造函数将其集合类型转化为`List<ModelMethod>`的集合`modelMethods`
 
 ```
 public ModelFactory(List<InvocableHandlerMethod> invocableMethods, WebDataBinderFactory dataBinderFactory,
@@ -585,7 +610,7 @@ public boolean containsAttribute(String name) {
 }
 ```
 
-以上将`@ModelAttribute`方法的集合做了包装，`invocableHandlerMethod -> ModelMethod`，多了个`dependencies`属性，类型为`Set<String>`，用来存放当前方法中带了`@ModelAttribute`注解的形参的参数名
+以上将`@ModelAttribute`方法的集合做了包装，`invocableHandlerMethod -> ModelMethod`，多了个`dependencies`属性，类型为`Set<String>`，用来存放当前方法中带了`@ModelAttribute`注解的**形参**的参数名
 
 接着遍历包装后的集合，`mavContainer`中的`model`必须拥有`dependencies`中所有的属性名，此时`checkDependencies`方法返回`true`，当`ModelMethod`的`dependencies`为空时，也返回`true`，其他返回`false`
 
@@ -610,4 +635,95 @@ private ModelMethod getNextModelMethod(ModelAndViewContainer mavContainer) {
 	this.modelMethods.remove(modelMethod);
 	return modelMethod;
 }
+```
 
+由于当前Demo中`@ModelAttribute`方法的形参没有带`@ModelAttribute`注解，所以这里`dependencies`为空，返回`true`
+
+往回`invokeModelAttributeMethods`方法
+
+```
+private void invokeModelAttributeMethods(NativeWebRequest request, ModelAndViewContainer mavContainer)
+		throws Exception {
+
+	while (!this.modelMethods.isEmpty()) {
+		InvocableHandlerMethod attrMethod = getNextModelMethod(mavContainer).getHandlerMethod();
+		String modelName = attrMethod.getMethodAnnotation(ModelAttribute.class).value();
+		if (mavContainer.containsAttribute(modelName)) {
+			continue;
+		}
+
+		Object returnValue = attrMethod.invokeForRequest(request, mavContainer);
+
+		if (!attrMethod.isVoid()){
+			String returnValueName = getNameForReturnValue(returnValue, attrMethod.getReturnType());
+			if (!mavContainer.containsAttribute(returnValueName)) {
+				mavContainer.addAttribute(returnValueName, returnValue);
+			}
+		}
+	}
+}
+```
+
+`getNextModelMethod`获取到`ModelMetod`后，将它解包装回`InvocableHandlerMethod`，获取当前方法注解`@ModelAttribute`的`value`值，如果当前`mavContainer`中的`Model`已经有与`value`同名的属性名，则跳过，**在之前的代码，我们知道此时**`Model`**中的属性来自于**`@SessionAttributes`
+
+然后调用`InvocableHandlerMethod`方法来完成执行`ModelAttribute`方法，取得返回值
+
+```
+public Object invokeForRequest(NativeWebRequest request, ModelAndViewContainer mavContainer,
+		Object... providedArgs) throws Exception {
+
+	Object[] args = getMethodArgumentValues(request, mavContainer, providedArgs);
+	if (logger.isTraceEnabled()) {
+		StringBuilder sb = new StringBuilder("Invoking [");
+		sb.append(getBeanType().getSimpleName()).append(".");
+		sb.append(getMethod().getName()).append("] method with arguments ");
+		sb.append(Arrays.asList(args));
+		logger.trace(sb.toString());
+	}
+	Object returnValue = doInvoke(args);
+	if (logger.isTraceEnabled()) {
+		logger.trace("Method [" + getMethod().getName() + "] returned [" + returnValue + "]");
+	}
+	return returnValue;
+}
+```
+
+获取方法参数数组
+
+```
+private Object[] getMethodArgumentValues(NativeWebRequest request, ModelAndViewContainer mavContainer,
+		Object... providedArgs) throws Exception {
+
+	MethodParameter[] parameters = getMethodParameters();
+	Object[] args = new Object[parameters.length];
+	for (int i = 0; i < parameters.length; i++) {
+		MethodParameter parameter = parameters[i];
+		parameter.initParameterNameDiscovery(this.parameterNameDiscoverer);
+		GenericTypeResolver.resolveParameterType(parameter, getBean().getClass());
+		args[i] = resolveProvidedArgument(parameter, providedArgs);
+		if (args[i] != null) {
+			continue;
+		}
+		if (this.argumentResolvers.supportsParameter(parameter)) {
+			try {
+				args[i] = this.argumentResolvers.resolveArgument(
+						parameter, mavContainer, request, this.dataBinderFactory);
+				continue;
+			}
+			catch (Exception ex) {
+				if (logger.isDebugEnabled()) {
+					logger.debug(getArgumentResolutionErrorMessage("Error resolving argument", i), ex);
+				}
+				throw ex;
+			}
+		}
+		if (args[i] == null) {
+			String msg = getArgumentResolutionErrorMessage("No suitable resolver for argument", i);
+			throw new IllegalStateException(msg);
+		}
+	}
+	return args;
+}
+```
+
+获取了方法参数类型数组`MethodParameter[]`
