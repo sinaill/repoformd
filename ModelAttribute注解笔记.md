@@ -1,7 +1,7 @@
 title: ModelAttribute注解笔记
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 
 ---
 

@@ -1,7 +1,7 @@
-title: SpringMvc获取HandlerExecutionChain和HandlerAdapter
+title: SpringMVC获取HandlerExecutionChain和HandlerAdapter
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 
 ---
 
@@ -68,7 +68,7 @@ Demo中用了`@RequestMapping`注解的方式来匹配url，所以只看它
 - `applicationContext`：Spring容器，可以用来获取容器中创建了的对象
 - `servletContext`
 - `urlMap`：属于`LinkedMultiValueMap`类，key值为请求中的`url(lookupPath)`，`value`值又是一个`linkedList`，可以存放多个`@RequestMappingInfo`类型的对象，该对象主要存放了`@RequestMapping`注解中的属性值，例如`value`和`method`属性，键值间的映射方式为`url(lookupPath)`与`@RequestMapping`注解的value值相同
-- `handlerMethods`：是一个`LinkedHashMap`，键key为`RequestMapping`对象，存放了`@RequestMapping`注解的属性，值value为对应方法的`HandlerMethod`对象的映射
+- `handlerMethods`：是一个`LinkedHashMap`，键key为`RequestMappingInfo`对象，存放了`@RequestMapping`注解的属性，值value为对应方法的`HandlerMethod`对象的映射
 - `mappedInterceptor`:是一个`ArrayList`，指向了配置中的所有拦截器
 
 #### RequestMappingInfo
@@ -171,6 +171,7 @@ protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletReques
 		//中的HandlerMethods集合中的keySet，也就是使用RequestMappingInfo集合进行遍历寻找
 		//匹配的RquestMappingInfo
 		//由这个特性得，当既有精确匹配又有模糊匹配时，优先匹配精确，然后才是模糊匹配
+		//补充：当使用@PathVariable的时候，匹配不到也会走这条路径
 	}
 
 	if (!matches.isEmpty()) {

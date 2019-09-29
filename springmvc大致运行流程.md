@@ -1,7 +1,7 @@
-title: springmvc大致运行流程
+title: SpringMVC大致运行流程
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 
 ---
 

@@ -1,7 +1,7 @@
-title: SpringMvc拦截器运行流程源码
+title: SpringMVC拦截器运行流程源码
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 
 ---
 
@@ -55,6 +55,8 @@ public abstract class HandlerInterceptorAdapter implements AsyncHandlerIntercept
 
 SpringMvc执行拦截器`preHandle`方法
 
+在`DispatcherServlet`中执行拦截器的`preHandle`方法，刚好在`Handler`方法被执行前执行
+
 ```
 if (!mappedHandler.applyPreHandle(processedRequest, response)) {
 	return;
@@ -106,7 +108,7 @@ void triggerAfterCompletion(HttpServletRequest request, HttpServletResponse resp
 }
 ```
 
-从英文注释中看出这个方法会在所有拦截器被成功执行并且返回`true`时触发，从`applyPreHandle`方法可以看到，当有拦截器返回了`false`时，这个方法也会被触发，然后执行所有拦截器的，然后返回`false`，最终请求被中止
+从英文注释中看出这个方法会在所有拦截器被成功执行并且返回`true`时触发，从`applyPreHandle`方法可以看到，当有拦截器返回了`false`时，这个方法也会被触发，然后执行所有拦截器的`afterCompletion`方法
 
 
 ### applyPostHandle
@@ -115,7 +117,7 @@ void triggerAfterCompletion(HttpServletRequest request, HttpServletResponse resp
 mappedHandler.applyPostHandle(processedRequest, response, mv);
 ```
 
-`applyPostHandle`方法在执行完`Handle`的目标方法后被执行，所以形参中有类型为`ModelAndView`变量`mv`
+`applyPostHandle`方法在执行完`Handler`的目标方法后被执行，所以形参中有类型为`ModelAndView`变量`mv`
 
 ```
 void applyPostHandle(HttpServletRequest request, HttpServletResponse response, ModelAndView mv) throws Exception {

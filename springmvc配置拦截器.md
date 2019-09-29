@@ -1,7 +1,7 @@
-title: springmvc配置拦截器
+title: SpringMVC配置拦截器
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 
 ---
 

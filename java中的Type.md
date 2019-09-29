@@ -47,6 +47,7 @@ public void testType() {
 		if(field.getGenericType() instanceof ParameterizedType) {
 			System.out.println("getRawType: "+((ParameterizedType)field.getGenericType()).getRawType());
 			for(Type type:((ParameterizedType)field.getGenericType()).getActualTypeArguments())
+			//getActualTypeArguments返回的类型为TypeVariable
 			System.out.println("getActualTypeArguments: "+type.getTypeName());
 		}
 	}

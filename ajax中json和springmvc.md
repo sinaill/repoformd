@@ -1,7 +1,7 @@
-title: ajax中json和springmvc
+title: ajax中json和SpringMVC
 categories: 框架
 tags: 
-	- SpringMvc
+	- SpringMVC
 	- ajax
 
 ---
