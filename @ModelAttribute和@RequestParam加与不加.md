@@ -1,4 +1,4 @@
-title: @ModelAttribute和@RequestParam加与不加
+title: 注解@ModelAttribute和@RequestParam加与不加
 categories: 框架
 tags: 
 	- SpringMVC

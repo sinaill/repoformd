@@ -131,11 +131,11 @@ void applyPostHandle(HttpServletRequest request, HttpServletResponse response, M
 }
 ```
 
-注意到获取到拦截器数组`interceptors`后，是从高位往地位顺序执行拦截器的`postHandle`方法，在其中，我们可以对`Handler`返回的视图ModelAndView进行修改
+注意到获取到拦截器数组`interceptors`后，是从高位往地位顺序执行拦截器的`postHandle`方法，在其中，我们可以对`Handler`返回的视图`ModelAndView`进行修改
 
 ### triggerAfterCompletion
 
-`triggerAfterCompletion`的调用是在`processDispatchResult`方法里
+`triggerAfterCompletion`的调用是在`processDispatchResult`方法里，在渲染完视图之后
 
 
 ```

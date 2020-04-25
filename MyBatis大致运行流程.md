@@ -155,7 +155,7 @@ public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method 
   String statementName = mapperInterface.getName() + "." + method.getName();
   MappedStatement ms = null;
   if (configuration.hasStatement(statementName)) {
-	//大概是通过命名空间和id从配置文件查找语句
+	//大概是通过命名空间和id从配置文件查找具体配置对象
     ms = configuration.getMappedStatement(statementName);
   } else if (!mapperInterface.equals(method.getDeclaringClass())) { // issue #35
     String parentStatementName = method.getDeclaringClass().getName() + "." + method.getName();
@@ -180,6 +180,23 @@ public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method 
 }
 ```
 
+看`MethodSignature`的创建
+
+```
+public MethodSignature(Configuration configuration, Method method) {
+  this.returnType = method.getReturnType();
+  this.returnsVoid = void.class.equals(this.returnType);
+  this.returnsMany = (configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray());
+  this.mapKey = getMapKey(method);
+  this.returnsMap = (this.mapKey != null);
+  //处理@Param
+  this.hasNamedParameters = hasNamedParams(method);
+  this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
+  this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
+  this.params = Collections.unmodifiableSortedMap(getParams(method, this.hasNamedParameters));
+}
+```
+
 在代理类中生成MethodMapper类后，调用execute方法来指定sqlcommand中的sql语句
 
 ```
@@ -187,8 +204,8 @@ public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method 
 	//args是由代理类invoke方法传来的方法参数
     Object result;
     if (SqlCommandType.INSERT == command.getType()) {
-	
       Object param = method.convertArgsToSqlCommandParam(args);
+	  //getName返回具体配置语句对象的id
       result = rowCountResult(sqlSession.insert(command.getName(), param));
     } else if (SqlCommandType.UPDATE == command.getType()) {
       Object param = method.convertArgsToSqlCommandParam(args);

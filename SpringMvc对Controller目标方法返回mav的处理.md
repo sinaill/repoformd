@@ -235,7 +235,7 @@ protected boolean canHandle(String viewName, Locale locale) {
 
 字符串数组`viewNames`也是在配置`InternalResourceViewResolver`的时候配置好的，根据这个决定是否处理这个视图
 
-然后可以看到这里根据视图前缀创建不同类型的视图对象`View`，分别是以`redirect:`开头的重定向`RedirectView`，以`forward:`开头的内部转发`InternalResourceView`，和第三种没有前缀的`InternalResourceView`
+然后可以看到这里根据视图前缀创建不同类型的视图对象`View`，分别是以`redirect:`开头的重定向`RedirectView`，以`forward:`开头的内部转发`InternalResourceView`，和第三种没有前缀的如下，调用了父类的`createView`方法
 
 
 ```

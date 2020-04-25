@@ -2005,7 +2005,7 @@ private ModelAndView getModelAndView(ModelAndViewContainer mavContainer,
 
 2. 创建`ModelFactory`，处理`@ModelAttribute`方法
 
-3. 创建`MoelAndViewContainer`，用来作为`Model`和`View`的容器
+3. 创建`ModelAndViewContainer`，用来作为`Model`和`View`的容器
 
 4. 执行`@ModelAttribute`方法，在这之前先将`@SessionAttributes`注解的属性从`Session`中取出放入`mavContainer`的`Model`中
 

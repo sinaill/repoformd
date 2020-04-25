@@ -1,4 +1,4 @@
-title: @PathVariable注解
+title: 注解@PathVariable
 categories: 框架
 tags: 
 	- SpringMVC
@@ -105,6 +105,36 @@ public final Object resolveArgument(MethodParameter parameter, ModelAndViewConta
 `resolveName`根据注解的`value`从请求中获取对应的值
 
 ```
+protected Object resolveName(String name, MethodParameter parameter, NativeWebRequest request) throws Exception {
+	Map<String, String> uriTemplateVars =
+		(Map<String, String>) request.getAttribute(
+				HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
+	return (uriTemplateVars != null) ? uriTemplateVars.get(name) : null;
+}
+```
+
+从请求中获取存放PathVariable的`java.util.Map`类的变量，怎么来的后面有解释，然后根据`value`从`Map`中获取对应的值
+
+最后要注意`handleResolvedValue`方法
+
+```
+protected void handleResolvedValue(Object arg, String name, MethodParameter parameter,
+		ModelAndViewContainer mavContainer, NativeWebRequest request) {
+
+	String key = View.PATH_VARIABLES;
+	int scope = RequestAttributes.SCOPE_REQUEST;
+	Map<String, Object> pathVars = (Map<String, Object>) request.getAttribute(key, scope);
+	if (pathVars == null) {
+		pathVars = new HashMap<String, Object>();
+		request.setAttribute(key, pathVars, scope);
+	}
+	pathVars.put(name, arg);
+}
+```
+
+这里将PathVariable又以`View.PATH_VARIABLES`为键值放到`request`中，后面解析视图的时候会用到
+
+```
 @Override
 @SuppressWarnings("unchecked")
 protected Object resolveName(String name, MethodParameter parameter, NativeWebRequest request) throws Exception {
@@ -163,7 +193,7 @@ uriVariables = getPathMatcher().extractUriTemplateVariables(bestPattern, lookupP
 
 `bestPattern`指向被匹配的`@RequestMapping`的`value`，`lookupPath`指向`ServletPath`
 
-通过`extractUriTemplateVariables`方法获取{}中字符和对应`lookupPath`中的值
+通过`extractUriTemplateVariables`方法获取{}中字符和对应`lookupPath`中对应的值
 
 ```
 @Override

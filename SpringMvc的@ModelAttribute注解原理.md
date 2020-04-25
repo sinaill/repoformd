@@ -5,6 +5,7 @@ tags:
 
 ---
 
+
 ### @ModelAttribute注解的方法给模型中添加数据
 
 ```
@@ -363,6 +364,7 @@ public void initModel(NativeWebRequest request, ModelAndViewContainer mavContain
 	}
 }
 
+
 private List<String> findSessionAttributeArguments(HandlerMethod handlerMethod) {
 	List<String> result = new ArrayList<String>();
 	for (MethodParameter parameter : handlerMethod.getMethodParameters()) {
@@ -384,6 +386,6 @@ public static String getNameForParameter(MethodParameter parameter) {
 }
 ```
 
-可以看到执行完`@ModelAttribute`方法之后，在执行`Controller`目标方法之前，它要判断`BindingAwareModelMap`中有无要传递的属性，没有的话会抛出异常
+可以看到执行完`@ModelAttribute`方法之后，在执行`Controller`目标方法之前，它要判断`BindingAwareModelMap`中对应的那个属性是否为空，空的话会抛出异常
 
 也就是说要这样用的话，要保证在`@ModelAttribute`方法中就将要传递的属性和与`@SessionAttributes`和入参`@ModelAttribute`对应的属性名放入`BindingAwareModelMap`中，或者已经在`Session`中含有该属性和对应属性名，然后会在调用`@ModelAttribute`方法前被合并到`BindingAwareModelMap`中，否则会抛出异常

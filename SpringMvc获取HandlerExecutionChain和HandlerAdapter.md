@@ -305,7 +305,7 @@ private class Match {
 
 `Match`类为定义在`AbstractHandlerMethodMapping`的内部类，
 
-`this.handlerMethods.get(mapping)`，`handlerMethods`为`AbstractHandlerMethodMapping`类的成员变量，定义为`private final Map<T, HandlerMethod> handlerMethods = new LinkedHashMap<T, HandlerMethod>();`，键值key为`RequestMappingInfo`类型的对象，值value为`HandlerMethod`类型的对象，从Demo中看，映射关系为`Controller`中`RequestMappingInfo`和它对应的方法，在这里根据`RequestMapping`类的变量`mapping`获取对应的`HandlerMethod`对象，创建`Match`对象后添加到`matches`中
+`this.handlerMethods.get(mapping)`，`handlerMethods`为`AbstractHandlerMethodMapping`类的成员变量，定义为`private final Map<T, HandlerMethod> handlerMethods = new LinkedHashMap<T, HandlerMethod>();`，键值key为`RequestMappingInfo`类型的对象，值value为`HandlerMethod`类型的对象，从Demo中看，映射关系为`Controller`中`RequestMappingInfo`和它对应的方法，在这里根据`RequestMappingInfo`类的变量`mapping`获取对应的`HandlerMethod`对象，创建`Match`对象后添加到`matches`中
 
 至此，`addMappingMatchings`结束，回到`lookupHandlerMethod`方法
 
@@ -346,8 +346,49 @@ protected HandlerMethod lookupHandlerMethod(String lookupPath, HttpServletReques
 	}
 }
 ```
-
 这一步又一次对经过上一步筛选的`RequestMappingInfo`进行筛选(这一步不知道为什么还会有剩多个`RequestMappingInfo`，单纯的复制`Handler`中方法，编译期就报错)
+
+接着查看`handleMatch(bestMatch.mapping, lookupPath, request)`
+
+```
+@Override
+protected void handleMatch(RequestMappingInfo info, String lookupPath, HttpServletRequest request) {
+	super.handleMatch(info, lookupPath, request);
+
+	String bestPattern;
+	Map<String, String> uriVariables;
+	Map<String, String> decodedUriVariables;
+
+	Set<String> patterns = info.getPatternsCondition().getPatterns();
+	if (patterns.isEmpty()) {
+		bestPattern = lookupPath;
+		uriVariables = Collections.emptyMap();
+		decodedUriVariables = Collections.emptyMap();
+	}
+	else {
+		bestPattern = patterns.iterator().next();
+		uriVariables = getPathMatcher().extractUriTemplateVariables(bestPattern, lookupPath);
+		decodedUriVariables = getUrlPathHelper().decodePathVariables(request, uriVariables);
+	}
+
+	request.setAttribute(BEST_MATCHING_PATTERN_ATTRIBUTE, bestPattern);
+	request.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, decodedUriVariables);
+
+	if (isMatrixVariableContentAvailable()) {
+		Map<String, MultiValueMap<String, String>> matrixVars = extractMatrixVariables(request, uriVariables);
+		request.setAttribute(HandlerMapping.MATRIX_VARIABLES_ATTRIBUTE, matrixVars);
+	}
+
+	if (!info.getProducesCondition().getProducibleMediaTypes().isEmpty()) {
+		Set<MediaType> mediaTypes = info.getProducesCondition().getProducibleMediaTypes();
+		request.setAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, mediaTypes);
+	}
+}
+```
+
+这个方法将`uriVariable`变量以`HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE`为key绑定到`Request`中，并且这个`uriVariable`是`Map<String, String>`类型的
+
+
 
 上面一大段代码主要通过`ServetPath`->`RequestMappingInfo`->`HandlerMethod`->`March`
 此时变量`mathces`中就存放了这个`Match`，选取最优`Match`，返回`HandlerMethod`对象
@@ -389,7 +430,7 @@ public HandlerMethod createWithResolvedBean() {
 
 这里获取了`HandlerMethod`中的`bean`变量，在Demo中Debug得，`Object`类型的`bean`变量此时指向了一个字符串`String`对象，该对象存放的是`HandlerMethod`代表的方法所在的`Handler`控制器的类的名称
 
-而`beanFactory`实际指向了`org.springframework.beans.factory.support.DefaultListableBeanFactory`，经查询，是一个与Spring IOC相关的类，这里应该就是根据取得的`Handler`类的名称，从IOC容器中取出注解@controller的`Handler`，从而将`HandlerMethod`中的`Bean`变量从指向字符串转化为指向对应的`Handler`对象
+而`beanFactory`实际指向了`org.springframework.beans.factory.support.DefaultListableBeanFactory`，经查询，是一个与Spring IOC相关的类，这里应该就是根据取得的`Handler`类的名称，从IOC容器中取出注解`@controller`的`Handler`，从而将`HandlerMethod`中的`Bean`变量从指向字符串转化为指向对应的`Handler`对象
 
 返回后，执行回到`AbstractHandlerMapping`的`getHandler`方法
 

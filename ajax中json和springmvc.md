@@ -25,3 +25,32 @@ ajax中，没有指定`contentType`的话，Jquery默认使用`application/x-www
 
 指定`contentType`为`application/json`时，data必须为json字符串格式，springmvc接收数据要用`@RequestBody`注解
 
+```
+$.ajax({
+    type: "post",
+    url:  "mobile/notice/addMessageInfo.jspx",
+    contentType: "application/json",
+    data:"{'name':'zhangsan','age':'15'}",
+    dataType: "json",
+    success: function(data) {
+        console.log(data);
+    },
+    error: function(msg) {
+        console.log(msg)
+    }
+})
+
+
+$.ajax({
+    type: "post",
+    url:  "mobile/notice/addMessageInfo.jspx",
+    data:{name:'zhangsan',age:'15'},
+    dataType: "json",
+    success: function(data) {
+        console.log(data);
+    },
+    error: function(msg) {
+        console.log(msg)
+    }
+})
+```

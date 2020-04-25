@@ -22,13 +22,15 @@ class Outter{
 Outter.Inner inner = new Outter().new Inner();
 ```
 
-1.内部类中可以访问到外部类中所有方法和成员变量，即使是private或者static
+1. 内部类中可以访问到外部类中所有方法和成员变量，即使是private或者static
 
-2.**普通内部类中不能定义static变量和方法，但可以定义静态常量**
+2. **普通内部类中不能定义static变量和方法，但可以定义静态常量**
 
-3.外部类要访问内部类变量，必须先实例化一个内部类
+3. 外部类要访问内部类变量，必须先实例化一个内部类
 
-4.静态内部类的访问可以直接用Outter.Inner(初始化时new Outter.Inner())，访问内部类静态成员变量Outter.Inner.valueName
+4. 静态内部类的访问可以直接用Outter.Inner(初始化时new Outter.Inner())，访问内部类静态成员变量Outter.Inner.valueName
+
+5. 静态内部类不能访问外部类的属性方法
 
 ### 局部内部类
 

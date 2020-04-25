@@ -1,4 +1,4 @@
-title: @PathVariable参与到将参数绑定到入参Bean
+title: 注解@PathVariable参与到将参数绑定到入参Bean
 categories: 框架
 tags: 
 	- SpringMVC
