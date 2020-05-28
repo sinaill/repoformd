@@ -16,6 +16,18 @@ Semaphore中管理着一组虚拟的许可(permit)，许可的初始数量可通
 
 ### 方法摘要
 
+```
+public Semaphore(int permits) {
+    sync = new NonfairSync(permits);
+}
+
+public Semaphore(int permits, boolean fair) {
+    sync = fair ? new FairSync(permits) : new NonfairSync(permits);
+}
+```
+
+构造方法，也分公平锁和非公平锁，公平锁遵循FIFO原则
+
 - `void acquire()`
 
 从此信号量获取一个许可，在提供一个许可前一直将线程阻塞，否则线程被中断

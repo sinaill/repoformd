@@ -22,7 +22,7 @@ class Outter{
 Outter.Inner inner = new Outter().new Inner();
 ```
 
-1. 内部类中可以访问到外部类中所有方法和成员变量，即使是private或者static
+1. 内部类中可以访问到外部类中所有方法和成员变量，即使是private或者static，同理外部类也可以访问私有内部类的成员变量
 
 2. **普通内部类中不能定义static变量和方法，但可以定义静态常量**
 

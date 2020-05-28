@@ -7,7 +7,7 @@ tags:
 
 ### 什么是ThreadLocal
 
-`ThreadLoca`l一般称为线程本地变量，它是一种特殊的线程绑定机制，将变量与线程绑定在一起，为每一个线程维护一个独立的变量副本。通过`ThreadLocal`可以将对象的可见范围限制在同一个线程内。
+`ThreadLocal`一般称为线程本地变量，它是一种特殊的线程绑定机制，将变量与线程绑定在一起，为每一个线程维护一个独立的变量副本。通过`ThreadLocal`可以将对象的可见范围限制在同一个线程内。
 
 ### 查看源码
 
@@ -30,8 +30,11 @@ public void set(T value) {
 ThreadLocalMap getMap(Thread t) {
     return t.threadLocals;
 }
-查看ThreadLocalMap类,为键值对的数据结构，另外Thread类中定义了一个ThreadLocalMap类的引用。get方法中先获取线程t，再获取线程t中的ThreadLocalMap实例，如果不为空，设置一个新键值对，key为当前ThreadLocal实例，value为传入的参数value。如果为空，进入createMap方法
+```
 
+查看ThreadLocalMap类,为键值对的数据结构，另外Thread类中定义了一个ThreadLocalMap类的变量。get方法中先获取线程t，再获取线程t中的ThreadLocalMap实例，如果不为空，设置一个新键值对，key为当前ThreadLocal实例，value为传入的参数value。如果为空，进入createMap方法
+
+```
 void createMap(Thread t, T firstValue) {
     t.threadLocals = new ThreadLocalMap(this, firstValue);
 }

@@ -10,11 +10,11 @@ tags:
 
 `private volatile int state`: The synchronization state，标记当前加锁状态的变量，初始为0，当有线程调用`lock`方法获取到锁时，它会变为1(重入时继续增1)
 
-它有个内部类`Node`，每个线程为一个节点，以链表的结构实现多个线程排队
-
 `private transient volatile Node head`: 线程队列头
 
 `private transient volatile Node tail`: 线程队列尾
+
+它有个内部类`Node`，每个线程为一个节点，以链表的结构实现多个线程排队
 
 `volatile Node prev;`: 上一个节点
 
@@ -23,6 +23,8 @@ tags:
 `volatile int waitStatus`: 线程等待状态
 
 `volatile Thread thread`： 节点中的线程
+
+`volatile Node nextWaiter`: 节点锁的属性(shared和exclusive)
 
 等待线程队列wait queue结构如下
 
@@ -256,7 +258,7 @@ private static boolean shouldParkAfterFailedAcquire(Node pred, Node node) {
     return false;
     }
 ```
-初始`waitStatus`为0，所以这里把前节点的`waitStatus`都设置为Node.SIGNAL(-1)，返回`false`，然后短路，第二次循环这里返回`true`，然后进入`parkAndCheckInterrupt()`，挂起线程
+初始`waitStatus`为0，所以这里把前节点的`waitStatus`都设置为`Node.SIGNAL(-1)`，返回`false`，然后短路，第二次循环这里返回`true`，然后进入`parkAndCheckInterrupt()`，挂起线程
 
 ```
 private final boolean parkAndCheckInterrupt() {

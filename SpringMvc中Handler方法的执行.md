@@ -564,7 +564,7 @@ private void invokeModelAttributeMethods(NativeWebRequest request, ModelAndViewC
 }
 ```
 
-此处的`modelMethods`在前几步的`getModelFactory`中，是获取的控制器和全局`@initBinder`方法的集合。
+此处的`modelMethods`在前几步的`getModelFactory`中，是获取的控制器和全局`@ModelAttribute`方法的集合。
 
 我们看`getNextModelMethod(mavContainer).getHandlerMethod()`
 
